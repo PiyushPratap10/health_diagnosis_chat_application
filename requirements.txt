@@ -5,3 +5,5 @@ pydantic
 motor
 asyncpg
 pyjwt
+google
+googel-generativeai
