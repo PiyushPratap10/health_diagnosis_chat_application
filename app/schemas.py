@@ -11,6 +11,12 @@ class UserCreate(BaseModel):
     age:Optional[int]=None
     gender:Optional[str]=None
 
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    
 class UserResponse(BaseModel):
     user_id:UUID
     email:EmailStr

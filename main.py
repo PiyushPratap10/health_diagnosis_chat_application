@@ -5,8 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database import get_db, mongodb
-from app.models import User
-from app.schemas import UserCreate, UserResponse, UserLogin, Message, ChatSession
+from app.models import User,UserToken
+from app.schemas import UserCreate, UserResponse, UserLogin, Message, ChatSession,UserUpdate
 from app.diagnosis import askme
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -43,31 +43,55 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta if expires_delta else datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now() + expires_delta if expires_delta else datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # Dependency to get current user
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> User:
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db)
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # Decode the JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
+            print("User ID not found in token payload")
             raise credentials_exception
-    except (jwt.ExpiredSignatureError, jwt.JWTError):
+    except (jwt.ExpiredSignatureError, jwt.JWTError) as e:
+        print("Token decoding error:", str(e))
         raise credentials_exception
 
+    # Fetch the user from the database
     async with db.begin():
         result = await db.execute(select(User).filter_by(user_id=user_id))
         user = result.scalars().first()
-    if user is None:
-        raise credentials_exception
+
+        if user is None:
+            print("User not found in database")
+            raise credentials_exception
+        
+        # Fetch the token from UserToken table
+        token_entry = await db.execute(select(UserToken).filter_by(user_id=user.user_id))
+        user_token = token_entry.scalars().first()
+
+        # Debugging: print tokens to confirm matching
+        print("Token in request:", token)
+        print("Token in database:", user_token.token if user_token else "No token found in database")
+
+        # Validate token in UserToken table
+        if user_token is None or user_token.token != token:
+            print("Token mismatch")
+            raise credentials_exception
+
     return user
+
 
 # In-Memory Chat Storage
 chat_memory: Dict[str, List[Dict]] = {}  # Stores messages temporarily by session_id
@@ -171,9 +195,70 @@ async def login_user(user: UserLogin, db: AsyncSession = Depends(get_db)):
         data={"sub": str(db_user.user_id)}, expires_delta=access_token_expires
     )
 
+    # Update or insert token into UserToken table
+    async with db.begin():
+        token_entry = await db.execute(select(UserToken).filter_by(user_id=db_user.user_id))
+        user_token = token_entry.scalars().first()
+        
+        if user_token:
+            user_token.token = access_token
+        else:
+            user_token = UserToken(user_id=db_user.user_id, token=access_token)
+            db.add(user_token)
+        
+        await db.commit()
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user_id": str(db_user.user_id),
         "email": db_user.email
+    }
+
+@app.post("/users/profile/{user_id}")
+async def get_profile(user_id:str,db:AsyncSession=Depends(get_db)):
+    async with db.begin():
+        result=await db.execute(select(User).filter_by(user_id=user_id))
+        db_user=result.scalars().first()
+        if not db_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found."
+            )
+    return {
+        "email": db_user.email,
+        "name": db_user.name,
+        "gender": db_user.gender,
+        "age": db_user.age,
+        "user_id": db_user.user_id
+    }
+
+@app.put("/users/update/{user_id}")
+async def update_user(user_id: str, user: UserUpdate, db: AsyncSession = Depends(get_db)):
+    
+    async with db.begin():
+        result = await db.execute(select(User).filter_by(user_id=user_id))
+        db_user=result.scalars().first()
+
+        if not db_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+    
+        update_data=user.model_dump(exclude_unset=True)
+        for key,value in update_data.items():
+            setattr(db_user,key,value)
+
+   
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+
+    return {
+        "email": db_user.email,
+        "name": db_user.name,
+        "gender": db_user.gender,
+        "age": db_user.age,
+        "user_id": db_user.user_id
     }
