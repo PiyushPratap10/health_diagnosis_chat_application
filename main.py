@@ -1,6 +1,6 @@
 # main.py
 from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -12,7 +12,7 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 import bcrypt
 import jwt
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Annotated
 import asyncio
 
 app = FastAPI()
@@ -31,7 +31,7 @@ SECRET_KEY = "reality_is_not_real"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 90  
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 # Password hashing functions
 def hash_password(password: str) -> str:
@@ -43,7 +43,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.now() + expires_delta if expires_delta else datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now() + expires_delta if expires_delta else datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -192,7 +192,7 @@ async def login_user(user: UserLogin, db: AsyncSession = Depends(get_db)):
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(db_user.user_id)}, expires_delta=access_token_expires
+        data={"sub": str(db_user.email)}, expires_delta=access_token_expires
     )
 
     # Update or insert token into UserToken table
@@ -262,3 +262,33 @@ async def update_user(user_id: str, user: UserUpdate, db: AsyncSession = Depends
         "age": db_user.age,
         "user_id": db_user.user_id
     }
+
+async def authenticate_user(username:str,password:str,db:AsyncSession):
+    async with db.begin():
+        result= await db.execute(select(User).filter_by(email=username))
+        db_user=result.scalars().first()
+        if not db_user:
+            return False
+        if not verify_password(password,db_user.password_hash):
+            return False
+    return db_user
+
+@app.post("/token")
+async def login_for_access_token(form:Annotated[OAuth2PasswordRequestForm, Depends()],db:AsyncSession=Depends(get_db)):
+    user =await authenticate_user(form.username,form.password,db)
+    if not user:
+        raise HTTPException()
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(form.username)}, expires_delta=access_token_expires
+    )
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
+    
+@app.get("/")
+async def get_user(user:dict = Depends(get_current_user),db:AsyncSession=Depends(get_db)):
+    if user is None:
+        return HTTPException()
+    return user
