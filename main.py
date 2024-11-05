@@ -14,7 +14,7 @@ import bcrypt
 import jwt
 from typing import Optional, Dict, List, Annotated
 import asyncio
-
+from sqlalchemy import delete
 app = FastAPI()
 
 # CORS Middleware
@@ -117,12 +117,12 @@ async def websocket_chat(websocket: WebSocket, user_id: str, session_id: str):
                 "user_message": {
                     "message": data,
                     "sender": "user",
-                    "timestamp": datetime.utcnow()
+                    "timestamp": datetime.now()
                 },
                 "model_response": {
                     "message": model_response,
                     "sender": "model",
-                    "timestamp": datetime.utcnow()
+                    "timestamp": datetime.now()
                 }
             }
             chat_memory[session_id].append(message_pair)
@@ -292,3 +292,25 @@ async def get_user(user:dict = Depends(get_current_user),db:AsyncSession=Depends
     if user is None:
         return HTTPException()
     return user
+
+
+@app.delete("/users/delete/{user_id}",status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user_id:str,db:AsyncSession=Depends(get_db)):
+    async with db.begin():
+        result=await db.execute(select(User).filter_by(user_id=user_id))
+        db_user=result.scalars().first()
+
+        if not db_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        await db.execute(delete(UserToken).where(UserToken.user_id==user_id))
+        await db.delete(db_user)
+
+    chat_collection=mongodb['user_chats']
+    deletion_result=await chat_collection.delete_many({"user_id":user_id})
+
+    return {"message":"User and associated data successfully deleted"}
+
