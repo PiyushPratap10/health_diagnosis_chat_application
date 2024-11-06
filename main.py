@@ -175,7 +175,14 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(user_obj)
     await db.commit()
     await db.refresh(user_obj)
-    return user_obj
+    return {
+        "user_id":user_obj.user_id,
+        "email":user_obj.email,
+        "name":user_obj.name,
+        "password":user_obj.password_hash,
+        "age":user_obj.age,
+        "gender":user_obj.gender
+    }
 
 # Signin Endpoint
 @app.post("/users/signin", response_model=Dict[str, str])
