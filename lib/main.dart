@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:healthwise_ai/api/chat_service.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -11,7 +12,9 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider(),
+        ),
+        ChangeNotifierProvider(create: (context)=> ChatService())
       ],
       child: MyApp(),
     ),
@@ -34,7 +37,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/register',
+      initialRoute: '/login',
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),

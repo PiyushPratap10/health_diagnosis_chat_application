@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://127.0.0.1:8000/users'));
 
   Future<Map<String, dynamic>?> signup(String name, String email,
-      String password,int age,String gender ) async {
+      String password, int age, String gender) async {
     try {
       final response = await _dio.post('/signup', data: {
         'name': name,
@@ -14,18 +15,17 @@ class ApiService {
         'age': age,
         'gender': gender,
       });
-      if (response.statusCode==200){
+      if (response.statusCode == 200) {
         print(response.data);
         return {
-        'name': name,
-        'email': email,
-        'password': response.data['password'],
-        'age': age,
-        'gender': gender,
-        'user_id':response.data['user_id']
-      };
+          'name': name,
+          'email': email,
+          'password': response.data['password'],
+          'age': age,
+          'gender': gender,
+          'user_id': response.data['user_id']
+        };
       }
-      
     } on DioException catch (e) {
       // Fluttertoast.showToast(msg: "Signup failed: ${e.response?.data['error'] ?? e.message}");
       return null;
@@ -38,7 +38,19 @@ class ApiService {
         'email': email,
         'password': password,
       });
-      return response.data;
+      if (response.statusCode == 200) {
+        final accessToken = response.data['access_token'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', accessToken);
+        return {
+          'name': response.data['name'],
+          'email': email,
+          'password': response.data['password'],
+          'age': response.data['age'],
+          'gender': response.data['gender'],
+          'user_id': response.data['user_id']
+        };
+      }
     } on DioException catch (e) {
       Fluttertoast.showToast(
           msg: "Signin failed: ${e.response?.data['error'] ?? e.message}");
@@ -77,5 +89,10 @@ class ApiService {
       Fluttertoast.showToast(msg: "Profile update failed: ${e.message}");
       return null;
     }
+  }
+  // Fetch Access Token from SharedPreferences
+  Future<String?> getAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('access_token');
   }
 }

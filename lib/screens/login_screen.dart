@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../api/api_service.dart';
 import '../providers/user_provider.dart';
 import '../models/user.dart';
 import '../widgets/custom_text_field.dart';
@@ -11,20 +13,36 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final ApiService apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      final user = User(
-        name: "Dummy Name", // Assume backend fills real user info
-        email: _emailController.text,
-        password: _passwordController.text,
-        userId: "12345", // Dummy ID, replace with actual logic
+      final result = await apiService.signin(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
-      Provider.of<UserProvider>(context, listen: false).setUser(user);
-      Navigator.pushReplacementNamed(context, '/chat');
+
+      if (result != null) {
+        final user = User(
+          name: result['name'].toString(),
+          email: result['email'].toString(),
+          userId: result['user_id'].toString(),
+          age: result['age'],
+          gender: result['gender'].toString(),
+          password: result['password'].toString()
+        );
+
+        Provider.of<UserProvider>(context, listen: false).setUser(user);
+
+        // Navigate to chat screen
+        Navigator.pushReplacementNamed(context, '/chat');
+        Fluttertoast.showToast(msg: "Login successful!");
+      } else {
+        Fluttertoast.showToast(msg: "Login failed. Please check your credentials.");
+      }
     }
   }
 
