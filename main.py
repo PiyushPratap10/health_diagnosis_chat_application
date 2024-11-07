@@ -185,7 +185,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     }
 
 # Signin Endpoint
-@app.post("/users/signin", response_model=Dict[str, str])
+@app.post("/users/signin")
 async def login_user(user: UserLogin, db: AsyncSession = Depends(get_db)):
     async with db.begin():
         result = await db.execute(select(User).filter_by(email=user.email))
@@ -219,7 +219,11 @@ async def login_user(user: UserLogin, db: AsyncSession = Depends(get_db)):
         "access_token": access_token,
         "token_type": "bearer",
         "user_id": str(db_user.user_id),
-        "email": db_user.email
+        "email": db_user.email,
+        "name":db_user.name,
+        "password":db_user.password_hash,
+        "age":db_user.age,
+        "gender":db_user.gender
     }
 
 @app.post("/users/profile/{user_id}")
