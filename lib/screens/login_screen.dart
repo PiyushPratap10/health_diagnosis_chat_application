@@ -27,13 +27,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result != null) {
         final user = User(
-          name: result['name'].toString(),
-          email: result['email'].toString(),
-          userId: result['user_id'].toString(),
-          age: result['age'],
-          gender: result['gender'].toString(),
-          password: result['password'].toString()
-        );
+            name: result['name'].toString(),
+            email: result['email'].toString(),
+            userId: result['user_id'].toString(),
+            age: result['age'],
+            gender: result['gender'].toString(),
+            password: result['password'].toString());
 
         Provider.of<UserProvider>(context, listen: false).setUser(user);
 
@@ -41,7 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacementNamed(context, '/chat');
         Fluttertoast.showToast(msg: "Login successful!");
       } else {
-        Fluttertoast.showToast(msg: "Login failed. Please check your credentials.");
+        Fluttertoast.showToast(
+            msg: "Login failed. Please check your credentials.");
       }
     }
   }
@@ -81,6 +81,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              SizedBox(height: 20),
+              TextButton(
+                  onPressed: () {
+                    Navigator.popAndPushNamed(context, "/register");
+                  },
+                  child: const Text("Don't have an account? Register"))
             ],
           ),
         ),

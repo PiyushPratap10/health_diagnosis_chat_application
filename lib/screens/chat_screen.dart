@@ -14,7 +14,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final List<Map<String, dynamic>> _messages = [];
   late ChatService _chatService;
-  bool _isSending = false;  // Add this flag to track sending state
+  bool _isSending = false;
 
   @override
   void initState() {
@@ -23,23 +23,20 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _initializeChat() async {
-  final prefs = await SharedPreferences.getInstance();
-  final accessToken = prefs.getString('access_token');
-  final userId = Provider.of<UserProvider>(context, listen: false).user?.userId;
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+    final userId =
+        Provider.of<UserProvider>(context, listen: false).user?.userId;
 
-  if (accessToken != null && userId != null) {
-    _chatService = Provider.of<ChatService>(context, listen: false);
-
-    // Remove any existing listener to prevent duplication
-    _chatService.removeListener(_receiveMessage);
-    
-    // Connect WebSocket and add listener
-    await _chatService.connect(userId, accessToken);
-    _chatService.addListener(_receiveMessage);
-  } else {
-    print("Access token or user ID not found. Cannot connect to chat.");
+    if (accessToken != null && userId != null) {
+      _chatService = Provider.of<ChatService>(context, listen: false);
+      _chatService.removeListener(_receiveMessage);
+      await _chatService.connect(userId, accessToken);
+      _chatService.addListener(_receiveMessage);
+    } else {
+      print("Access token or user ID not found. Cannot connect to chat.");
+    }
   }
-}
 
   void _receiveMessage() {
     setState(() {
@@ -52,73 +49,92 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _sendMessage() {
-  if (_isSending) return;
+    if (_isSending) return;
 
-  setState(() {
-    _isSending = true;
-  });
-
-  final messageText = _messageController.text.trim();
-  if (messageText.isNotEmpty) {
-    _chatService.sendMessage(messageText);
     setState(() {
-      _messages.add({
-        'text': messageText,
-        'isUser': true,
+      _isSending = true;
+    });
+
+    final messageText = _messageController.text.trim();
+    if (messageText.isNotEmpty) {
+      _chatService.sendMessage(messageText);
+      setState(() {
+        _messages.add({
+          'text': messageText,
+          'isUser': true,
+        });
+      });
+      _messageController.clear();
+    }
+
+    Future.delayed(Duration(milliseconds: 200), () {
+      setState(() {
+        _isSending = false;
       });
     });
-    _messageController.clear();
   }
-
-  // Add a small delay to reset the flag to prevent double triggering
-  Future.delayed(Duration(milliseconds: 200), () {
-    setState(() {
-      _isSending = false;
-    });
-  });
-}
-
 
   @override
   void dispose() {
     _chatService.removeListener(_receiveMessage);
-    _chatService.disconnect();  // Disconnect WebSocket
+    _chatService.disconnect();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Health Bot"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {
-              // Additional actions like settings
-            },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLargeScreen = constraints.maxWidth > 980;
+
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 39, 39, 39),
+          appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: const Color.fromARGB(255, 27, 201, 0),
+            title: Text("Health Bot", style: TextStyle(color: Colors.white)),
+            actions: isLargeScreen
+                ? null
+                : [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GestureDetector(
+                        child: Icon(Icons.person),
+                      ),
+                    ),
+                  ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              reverse: true,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[_messages.length - 1 - index];
-                return MessageBubble(
-                  message: message['text'],
-                  isUser: message['isUser'],
-                );
-              },
-            ),
+          drawer: isLargeScreen ? null : _buildDrawer(),
+          body: Row(
+            children: [
+              if (isLargeScreen)
+                _buildDrawer(), // Show drawer as a side panel on large screens
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        reverse: true,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message =
+                              _messages[_messages.length - 1 - index];
+                          return MessageBubble(
+                            message: message['text'],
+                            isUser: message['isUser'],
+                          );
+                        },
+                      ),
+                    ),
+                    _buildMessageInput(),
+                  ],
+                ),
+              ),
+            ],
           ),
-          _buildMessageInput(),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -146,11 +162,86 @@ class _ChatScreenState extends State<ChatScreen> {
           SizedBox(width: 8),
           CircleAvatar(
             radius: 22,
-            backgroundColor: Colors.blue,
+            backgroundColor: const Color.fromARGB(255, 27, 201, 0),
             child: IconButton(
               icon: Icon(Icons.send, color: Colors.white),
               onPressed: _sendMessage,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: const Color.fromARGB(255, 62, 62, 62),
+      shape: LinearBorder(),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 27, 201, 0),
+            ),
+            child: Text(
+              'Menu',
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+            title: Text(
+              'Your Profile',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              // Navigate to Profile
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.history,
+              color: Colors.white,
+            ),
+            title: Text('Chat History', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              // Navigate to Chat History
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.info,
+              color: Colors.white,
+            ),
+            title: Text('Model Information',
+                style: TextStyle(color: Colors.white)),
+            onTap: () {
+              // Navigate to Model Information
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.policy,
+              color: Colors.white,
+            ),
+            title: Text('Usage Policy', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              // Navigate to Usage Policy
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
+            title: Text('Logout', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              // Perform Logout
+            },
           ),
         ],
       ),

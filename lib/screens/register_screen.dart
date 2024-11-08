@@ -36,7 +36,7 @@ class RegisterScreen extends StatelessWidget {
           gender: result['gender'].toString(),
         );
         Provider.of<UserProvider>(context, listen: false).setUser(user);
-        Navigator.pushReplacementNamed(context, '/chat');}
+        Navigator.pushReplacementNamed(context, '/login');}
       }catch(e){
         print(e);
       }
@@ -110,6 +110,10 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(height: 20),
+              TextButton(onPressed: (){
+                Navigator.popAndPushNamed(context, '/login');
+              }, child: const Text("Already have an account? Login"))
             ],
           ),
         ),

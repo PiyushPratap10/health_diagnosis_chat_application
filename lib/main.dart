@@ -10,6 +10,7 @@ import 'providers/user_provider.dart';
 
 void main() {
   runApp(
+    
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider(),
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Health Diagnosis Chatbot',
       theme: ThemeData(
         primarySwatch: Colors.lightBlue,
