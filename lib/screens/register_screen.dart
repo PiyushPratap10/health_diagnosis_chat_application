@@ -15,6 +15,8 @@ class RegisterScreen extends StatelessWidget {
   final _ageController = TextEditingController();
   String? _gender;
 
+  RegisterScreen({super.key});
+
   void _register(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       final result = await apiService.signup(

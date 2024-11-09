@@ -38,41 +38,48 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _receiveMessage() {
+void _sendMessage() {
+  if (_isSending) return;
+
+  setState(() {
+    _isSending = true;
+  });
+
+  final messageText = _messageController.text.trim();
+  if (messageText.isNotEmpty) {
+    // Immediately add the message to the UI
     setState(() {
-      final newMessage = _chatService.messages.last;
+      _messages.add({
+        'text': messageText,
+        'isUser': true,
+      });
+    });
+
+    _chatService.sendMessage(messageText); // This triggers _receiveMessage if a response comes back
+    _messageController.clear();
+  }
+
+  Future.delayed(Duration(milliseconds: 200), () {
+    setState(() {
+      _isSending = false;
+    });
+  });
+}
+
+void _receiveMessage() {
+  final newMessage = _chatService.messages.last;
+
+  // Only process the message if it's not a duplicate user message
+  if (newMessage['sender'] != 'user') {
+    setState(() {
       _messages.add({
         'text': newMessage['message'],
-        'isUser': newMessage['sender'] == 'user',
+        'isUser': false, // Message is from bot
       });
     });
   }
+}
 
-  void _sendMessage() {
-    if (_isSending) return;
-
-    setState(() {
-      _isSending = true;
-    });
-
-    final messageText = _messageController.text.trim();
-    if (messageText.isNotEmpty) {
-      _chatService.sendMessage(messageText);
-      setState(() {
-        _messages.add({
-          'text': messageText,
-          'isUser': true,
-        });
-      });
-      _messageController.clear();
-    }
-
-    Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        _isSending = false;
-      });
-    });
-  }
 
   @override
   void dispose() {
@@ -92,7 +99,8 @@ class _ChatScreenState extends State<ChatScreen> {
           appBar: AppBar(
             centerTitle: true,
             backgroundColor: const Color.fromARGB(255, 27, 201, 0),
-            title: Text("Health Bot", style: TextStyle(color: Colors.white)),
+            title:
+                const Text("Health Bot", style: TextStyle(color: Colors.white)),
             actions: isLargeScreen
                 ? null
                 : [
@@ -145,6 +153,8 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: TextField(
+              minLines: 1,
+              maxLines: 5,
               controller: _messageController,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
