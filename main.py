@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 from app.database import get_db, mongodb
 from app.models import User,UserToken
 from app.schemas import UserCreate, UserResponse, UserLogin, Message, ChatSession,UserUpdate
-from app.diagnosis import askme
+from app.diagnosis import chatbot_response
 from uuid import uuid4
 from datetime import datetime, timedelta
 import bcrypt
@@ -93,25 +93,42 @@ async def get_current_user(
     return user
 
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}  # Maps session_id to WebSocket connections
+
+    async def connect(self, websocket: WebSocket, session_id: str):
+        await websocket.accept()
+        self.active_connections[session_id] = websocket
+
+    def disconnect(self, session_id: str):
+        self.active_connections.pop(session_id, None)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+manager = ConnectionManager()
+
 # In-Memory Chat Storage
 chat_memory: Dict[str, List[Dict]] = {}  # Stores messages temporarily by session_id
 
 @app.websocket("/ws/chat/{user_id}/{session_id}")
 async def websocket_chat(websocket: WebSocket, user_id: str, session_id: str):
-    await websocket.accept()
-
-    # Initialize session in chat_memory if it doesn't exist
+    # Connect to the WebSocket and initialize session memory if needed
+    await manager.connect(websocket, session_id)
+    
     if session_id not in chat_memory:
         chat_memory[session_id] = []
-
+    
     try:
+        chat_history=[{"role": "system", "content": "You are a professional doctor. Diagnose the problems of patients and give solution in 30 words."}]
         while True:
-            # Receive user message
+            # Receive message from user
             data = await websocket.receive_text()
 
-            # Generate model response using the `askme` function
-            model_response = askme(data)
-
+            # Generate model response using chatbot_response function
+            model_response, chat_history = chatbot_response(data,chat_history)
+            
             # Store the message pair (user and model response) in chat_memory
             message_pair = {
                 "user_message": {
@@ -128,15 +145,17 @@ async def websocket_chat(websocket: WebSocket, user_id: str, session_id: str):
             chat_memory[session_id].append(message_pair)
 
             # Send the model response back to the client
-            await websocket.send_text(model_response)
+            await manager.send_personal_message(model_response, websocket)
 
-            # Save messages periodically
+            # Periodic save to MongoDB after every 5 messages
             if len(chat_memory[session_id]) >= 5:
                 await save_chat_to_mongo(user_id, session_id)
+
     except WebSocketDisconnect:
-        # On disconnection, save remaining messages
+        # On disconnection, save remaining messages and cleanup
         await save_chat_to_mongo(user_id, session_id)
         chat_memory.pop(session_id, None)
+        manager.disconnect(session_id)
 
 # Save chat messages to MongoDB
 async def save_chat_to_mongo(user_id: str, session_id: str):

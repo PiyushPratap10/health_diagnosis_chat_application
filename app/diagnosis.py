@@ -1,28 +1,29 @@
-import google.generativeai as genai
+from huggingface_hub import InferenceClient
+client = InferenceClient(api_key="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")
 
-genai.configure(api_key="AIzaSyBr-NYHIjYNAre80ROBo4KA_H19bbOdjBE")
+def chatbot_response(user_message, conversation_history=None):
+    if conversation_history is None:
+        conversation_history = [
+            {"role": "system", "content": "You are a professional doctor. Diagnose the problems of patients and give solution in 30 words."}
+        ]
 
-# Create the model
-generation_config = {
-  "temperature": 0.9,
-  "top_p": 1,
-  "max_output_tokens": 300,
-  "response_mime_type": "text/plain",
-}
+    conversation_history.append({"role": "user", "content": user_message})
 
-model = genai.GenerativeModel(
-  model_name="gemini-1.0-pro",
-  generation_config=generation_config,
-)
+    try:
+        response = client.chat.completions.create(
+            model="Qwen/Qwen2.5-72B-Instruct",
+            messages=conversation_history,
+            temperature=0.5,
+            max_tokens=256,
+            top_p=0.7
+        )
+        model_response = response.choices[0].message.content
+        conversation_history.append({"role": "assistant", "content": model_response})
+        
+        return model_response, conversation_history
 
-chat_session = model.start_chat(
-  history=[
-  ]
-)
-def askme(text:str):
-    query=f'''You are an experienced doctor and you have to give guidance to the patients with problems. Talk like a human doctor.
-    patient - {str}
-    '''
-    response = chat_session.send_message(query)
+    except Exception as e:
+        return f"Error: {e}", conversation_history
 
-    return response.text
+
+
