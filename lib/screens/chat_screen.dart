@@ -38,48 +38,48 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-void _sendMessage() {
-  if (_isSending) return;
+  void _sendMessage() {
+    if (_isSending) return;
 
-  setState(() {
-    _isSending = true;
-  });
-
-  final messageText = _messageController.text.trim();
-  if (messageText.isNotEmpty) {
-    // Immediately add the message to the UI
     setState(() {
-      _messages.add({
-        'text': messageText,
-        'isUser': true,
+      _isSending = true;
+    });
+
+    final messageText = _messageController.text.trim();
+    if (messageText.isNotEmpty) {
+      // Immediately add the message to the UI
+      setState(() {
+        _messages.add({
+          'text': messageText,
+          'isUser': true,
+        });
       });
-    });
 
-    _chatService.sendMessage(messageText); // This triggers _receiveMessage if a response comes back
-    _messageController.clear();
-  }
+      _chatService.sendMessage(
+          messageText); // This triggers _receiveMessage if a response comes back
+      _messageController.clear();
+    }
 
-  Future.delayed(Duration(milliseconds: 200), () {
-    setState(() {
-      _isSending = false;
-    });
-  });
-}
-
-void _receiveMessage() {
-  final newMessage = _chatService.messages.last;
-
-  // Only process the message if it's not a duplicate user message
-  if (newMessage['sender'] != 'user') {
-    setState(() {
-      _messages.add({
-        'text': newMessage['message'],
-        'isUser': false, // Message is from bot
+    Future.delayed(Duration(milliseconds: 200), () {
+      setState(() {
+        _isSending = false;
       });
     });
   }
-}
 
+  void _receiveMessage() {
+    final newMessage = _chatService.messages.last;
+
+    // Only process the message if it's not a duplicate user message
+    if (newMessage['sender'] != 'user') {
+      setState(() {
+        _messages.add({
+          'text': newMessage['message'],
+          'isUser': false, // Message is from bot
+        });
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -210,6 +210,7 @@ void _receiveMessage() {
             ),
             onTap: () {
               // Navigate to Profile
+              Navigator.pushNamed(context, "/profile");
             },
           ),
           ListTile(

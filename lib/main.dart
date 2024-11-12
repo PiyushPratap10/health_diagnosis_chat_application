@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:healthwise_ai/api/chat_service.dart';
+import 'package:healthwise_ai/screens/profile_view_screen.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/chat': (context) => ChatScreen(),
-        '/profile': (context) => ProfileScreen(),
+        '/profile': (context) => ProfileViewScreen(),
+        '/update': (context) => ProfileUpdateScreen(),
         '/chat_history': (context) => ChatHistoryScreen(),
       },
     );

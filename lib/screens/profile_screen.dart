@@ -4,12 +4,12 @@ import '../models/user.dart';
 import '../providers/user_provider.dart';
 import '../widgets/custom_text_field.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileUpdateScreen extends StatefulWidget {
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _ProfileUpdateScreenState createState() => _ProfileUpdateScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _ageController;
