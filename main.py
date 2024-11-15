@@ -245,6 +245,19 @@ async def login_user(user: UserLogin, db: AsyncSession = Depends(get_db)):
         "gender":db_user.gender
     }
 
+@app.post("/users/token/{user_id}")
+async def get_token(user_id:str,db:AsyncSession=Depends(get_db)):
+    async with db.begin():
+        result = await db.execute(select(UserToken).filter_by(user_id=user_id))
+        user_token = result.scalars().first()
+
+        if user_token:
+            return{'token':user_token.token}
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User token not available")
+        
+
+
 @app.post("/users/profile/{user_id}")
 async def get_profile(user_id:str,db:AsyncSession=Depends(get_db)):
     async with db.begin():
