@@ -15,10 +15,10 @@ class ProfileViewScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Profile',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: const Color.fromARGB(255, 39, 39, 39)),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: const Color.fromARGB(255, 27, 201, 0),
+        iconTheme: const IconThemeData(color: const Color.fromARGB(255, 39, 39, 39)),
+        backgroundColor: Color.fromARGB(255, 255, 223, 0),
         centerTitle: true,
       ),
       body: user == null
@@ -28,7 +28,7 @@ class ProfileViewScreen extends StatelessWidget {
                 final isLargeScreen = constraints.maxWidth > 600;
                 return Center(
                   child: Card(
-                    color: const Color.fromARGB(255, 62, 62, 62),
+                    color: Colors.white,
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     elevation: 8,
                     shape: RoundedRectangleBorder(
@@ -41,14 +41,14 @@ class ProfileViewScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Center(
+                          const Center(
                             child: CircleAvatar(
                               radius: 50,
-                              backgroundColor: Colors.grey[300],
+                              backgroundColor: const Color.fromARGB(255, 39, 39, 39),
                               child: Icon(
                                 Icons.person,
                                 size: 50,
-                                color: Colors.grey[800],
+                                color: const Color.fromARGB(255, 255, 255, 255),
                               ),
                             ),
                           ),
@@ -57,7 +57,7 @@ class ProfileViewScreen extends StatelessWidget {
                             "Name: ${user.name}",
                             style: const TextStyle(
                               fontSize: 18,
-                              color: Colors.white,
+                              color: const Color.fromARGB(255, 39, 39, 39),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -65,7 +65,7 @@ class ProfileViewScreen extends StatelessWidget {
                           Text(
                             "Email: ${user.email}",
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: const Color.fromARGB(255, 39, 39, 39),
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
                             ),
@@ -74,7 +74,7 @@ class ProfileViewScreen extends StatelessWidget {
                           Text(
                             "Age: ${user.age != null ? user.age.toString() : 'Not specified'}",
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: const Color.fromARGB(255, 39, 39, 39),
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
                             ),
@@ -83,7 +83,7 @@ class ProfileViewScreen extends StatelessWidget {
                           Text(
                             "Gender: ${user.gender ?? 'Not specified'}",
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: const Color.fromARGB(255, 39, 39, 39),
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
                             ),
@@ -99,7 +99,7 @@ class ProfileViewScreen extends StatelessWidget {
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
-                                      const Color.fromARGB(255, 27, 201, 0),
+                                      const Color.fromARGB(255, 39, 39, 39),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -108,7 +108,7 @@ class ProfileViewScreen extends StatelessWidget {
                                   "Update Profile",
                                   style: TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w600),
+                                      fontWeight: FontWeight.w500),
                                 ),
                               ),
                               ElevatedButton(
@@ -126,7 +126,7 @@ class ProfileViewScreen extends StatelessWidget {
                                   "Log Out",
                                   style: TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w600),
+                                      fontWeight: FontWeight.w500),
                                 ),
                               ),
                             ],

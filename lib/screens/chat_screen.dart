@@ -98,15 +98,18 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: const Color.fromARGB(255, 39, 39, 39),
           appBar: AppBar(
             centerTitle: true,
-            backgroundColor: const Color.fromARGB(255, 27, 201, 0),
-            title:
-                const Text("Health Bot", style: TextStyle(color: Colors.white)),
+            backgroundColor: Color.fromARGB(255, 255, 223, 0),
+            title: const Text("HealthWise",
+                style: TextStyle(color: const Color.fromARGB(255, 39, 39, 39))),
             actions: isLargeScreen
                 ? null
                 : [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: GestureDetector(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context, "/update");
+                        },
                         child: Icon(Icons.person),
                       ),
                     ),
@@ -172,9 +175,10 @@ class _ChatScreenState extends State<ChatScreen> {
           SizedBox(width: 8),
           CircleAvatar(
             radius: 22,
-            backgroundColor: const Color.fromARGB(255, 27, 201, 0),
+            backgroundColor: Color.fromARGB(255, 255, 223, 0),
             child: IconButton(
-              icon: Icon(Icons.send, color: Colors.white),
+              icon: Icon(Icons.send,
+                  color: const Color.fromARGB(255, 39, 39, 39)),
               onPressed: _sendMessage,
             ),
           ),
@@ -190,14 +194,8 @@ class _ChatScreenState extends State<ChatScreen> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 27, 201, 0),
-            ),
-            child: Text(
-              'Menu',
-              style: TextStyle(color: Colors.white, fontSize: 24),
-            ),
+          SizedBox(
+            height: 150,
           ),
           ListTile(
             leading: Icon(

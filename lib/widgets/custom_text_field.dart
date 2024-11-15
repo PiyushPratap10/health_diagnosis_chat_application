@@ -29,17 +29,18 @@ class CustomTextField extends StatelessWidget {
         keyboardType: keyboardType,
         validator: validator,
         decoration: InputDecoration(
+          labelStyle: TextStyle(color:const Color.fromARGB(255, 39, 39, 39) ),
           labelText: labelText,
-          prefixIcon: icon != null ? Icon(icon, color: Colors.lightGreen) : null,
+          prefixIcon: icon != null ? Icon(icon, color: const Color.fromARGB(255, 39, 39, 39)) : null,
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: Colors.grey[150],
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.lightGreen, width: 1.5),
+            borderSide: BorderSide(color: const Color.fromARGB(255, 39, 39, 39), width: 1.5),
           ),
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:healthwise_ai/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
@@ -72,24 +74,32 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> updateUserProfile(
-      String userId, String name, int age, String gender, String token) async {
+  Future<Map<String, dynamic>?> updateUserProfile(String userId, String name,
+      int age, String gender, String email) async {
     try {
-      final response = await _dio.put('/profile/$userId',
-          data: {
-            'name': name,
-            'age': age,
-            'gender': gender,
-          },
-          options: Options(
-            headers: {'Authorization': 'Bearer $token'},
-          ));
-      return response.data;
+      final response = await _dio.put(
+        '/update/$userId',
+        data: {
+          'email': email,
+          'name': name,
+          'age': age,
+          'gender': gender,
+        },
+      );
+      if (response.statusCode == 200) {
+        return {
+          'name': name,
+          'email': email,
+          'age': age,
+          'gender': gender,
+        };
+      }
     } on DioException catch (e) {
       Fluttertoast.showToast(msg: "Profile update failed: ${e.message}");
       return null;
     }
   }
+
   // Fetch Access Token from SharedPreferences
   Future<String?> getAccessToken() async {
     final prefs = await SharedPreferences.getInstance();

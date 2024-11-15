@@ -49,46 +49,67 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              CustomTextField(
-                labelText: 'Email',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                icon: Icons.email,
-                validator: Validators.validateEmail,
+      backgroundColor: const Color.fromARGB(255, 39, 39, 39),
+      body: Center(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth > 600 ? 600.0 : constraints.maxWidth;
+            return Card(
+              elevation: 4,
+              margin: EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              CustomTextField(
-                labelText: 'Password',
-                controller: _passwordController,
-                obscureText: true,
-                icon: Icons.lock,
-                validator: Validators.validatePassword,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                child: Text('Login'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                width: width,
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomTextField(
+                        labelText: 'Email',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        icon: Icons.email,
+                        validator: Validators.validateEmail,
+                      ),
+                      CustomTextField(
+                        labelText: 'Password',
+                        controller: _passwordController,
+                        obscureText: true,
+                        icon: Icons.lock,
+                        validator: Validators.validatePassword,
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _login,
+                        child: Text('Login',style: TextStyle(color: Colors.white),),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 39, 39, 39),
+                          shadowColor: null,
+                          minimumSize: Size(200, 50),
+                          maximumSize: Size(300, 50),
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.popAndPushNamed(context, "/register");
+                        },
+                        child: const Text("Don't have an account? Register",style: TextStyle(color: const Color.fromARGB(255, 39, 39, 39)),),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              TextButton(
-                  onPressed: () {
-                    Navigator.popAndPushNamed(context, "/register");
-                  },
-                  child: const Text("Don't have an account? Register"))
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
