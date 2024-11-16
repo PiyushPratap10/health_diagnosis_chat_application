@@ -123,7 +123,7 @@ class ProfileViewScreen extends StatelessWidget {
                                   ),
                                 ),
                                 child: const Text(
-                                  "Log Out",
+                                  "Delete Account",
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w500),

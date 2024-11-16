@@ -57,6 +57,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
       if (updated) Navigator.pop(context);
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {

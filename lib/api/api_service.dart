@@ -74,8 +74,8 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> updateUserProfile(String userId, String name,
-      int age, String gender, String email) async {
+  Future<Map<String, dynamic>?> updateUserProfile(
+      String userId, String name, int age, String gender, String email) async {
     try {
       final response = await _dio.put(
         '/update/$userId',
@@ -104,5 +104,17 @@ class ApiService {
   Future<String?> getAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('access_token');
+  }
+
+  Future<Map<String, dynamic>?> getUserChats(String userId) async {
+    try {
+      final response = await _dio.post('/chats/$userId');
+      if (response.statusCode == 200) {
+        return {"messages": response.data['messages']};
+      }
+    } on DioException catch (e) {
+      Fluttertoast.showToast(msg: "Failed to fetch chats: ${e.message}");
+      return null;
+    }
   }
 }

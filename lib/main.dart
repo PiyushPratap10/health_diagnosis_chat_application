@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
         '/chat': (context) => ChatScreen(),
         '/profile': (context) => ProfileViewScreen(),
         '/update': (context) => ProfileUpdateScreen(),
-        '/chat_history': (context) => ChatHistoryScreen(),
+        '/chat_history': (context) => ChatListScreen(),
       },
     );
   }

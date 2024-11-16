@@ -81,6 +81,21 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _logout() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+
+    // Clear user info and WebSocket connection
+    userProvider.clearUser();
+    _chatService.disconnect();
+
+    // Clear access token from shared preferences
+    await prefs.remove('access_token');
+
+    // Navigate to login screen, clearing navigation stack
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  }
+
   @override
   void dispose() {
     _chatService.removeListener(_receiveMessage);
@@ -219,6 +234,7 @@ class _ChatScreenState extends State<ChatScreen> {
             title: Text('Chat History', style: TextStyle(color: Colors.white)),
             onTap: () {
               // Navigate to Chat History
+              Navigator.pushNamed(context, '/chat_history');
             },
           ),
           ListTile(
@@ -248,9 +264,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
             ),
             title: Text('Logout', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              // Perform Logout
-            },
+            onTap: _logout,
           ),
         ],
       ),
