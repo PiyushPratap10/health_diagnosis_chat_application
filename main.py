@@ -15,6 +15,7 @@ import jwt
 from typing import Optional, Dict, List, Annotated
 import asyncio
 from sqlalchemy import delete
+
 app = FastAPI()
 
 # CORS Middleware
@@ -357,3 +358,15 @@ async def delete_user(user_id:str,db:AsyncSession=Depends(get_db)):
 
     return {"message":"User and associated data successfully deleted"}
 
+@app.post("/users/chats/{user_id}")
+async def user_chats(user_id:str):
+    chat_collection=mongodb['user_chats']
+    chats=await chat_collection.find({"user_id":user_id}).to_list(length=None)
+    if not chats:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No chats found for the specified user")
+    
+    messages=[]
+    for chat in chats:
+        messages.append(chat['messages'])
+
+    return {'messages':messages}
