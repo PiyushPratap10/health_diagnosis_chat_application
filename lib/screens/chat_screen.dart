@@ -228,6 +228,20 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           ListTile(
             leading: Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+            title: Text(
+              'Image Analyzer',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              // Navigate to Profile
+              Navigator.pushNamed(context, "/image_analyzer");
+            },
+          ),
+          ListTile(
+            leading: Icon(
               Icons.history,
               color: Colors.white,
             ),

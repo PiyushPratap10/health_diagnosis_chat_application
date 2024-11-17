@@ -1,7 +1,8 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:healthwise_ai/providers/user_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
@@ -115,6 +116,39 @@ class ApiService {
     } on DioException catch (e) {
       Fluttertoast.showToast(msg: "Failed to fetch chats: ${e.message}");
       return null;
+    }
+  }
+   Future<String?> analyzeImage(XFile imageFile) async {
+    try {
+      MultipartFile multipartFile;
+
+      // Use `XFile`'s `readAsBytes` method directly for both mobile and web.
+      multipartFile = MultipartFile.fromBytes(
+        await imageFile.readAsBytes(),
+        filename: imageFile.name,
+      );
+
+      FormData formData = FormData.fromMap({
+        "file": multipartFile,
+      });
+
+      Response response = await _dio.post(
+        "/analyze-image",
+        data: formData,
+        options: Options(headers: {"Content-Type": "multipart/form-data"}),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data["result"];
+      } else {
+        throw Exception("Failed to analyze image. Status code: ${response.statusCode}");
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        return e.response?.data["detail"] ?? "Unknown error";
+      } else {
+        return "Error: ${e.message}";
+      }
     }
   }
 }

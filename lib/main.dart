@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:healthwise_ai/api/chat_service.dart';
+import 'package:healthwise_ai/providers/image_chat_provider.dart';
+import 'package:healthwise_ai/screens/image_analysis_screen.dart';
 import 'package:healthwise_ai/screens/profile_view_screen.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
@@ -16,7 +18,8 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider(),
         ),
-        ChangeNotifierProvider(create: (context)=> ChatService())
+        ChangeNotifierProvider(create: (context)=> ChatService(),),
+        ChangeNotifierProvider(create: (context)=> ChatProvider(),)
       ],
       child: MyApp(),
     ),
@@ -48,6 +51,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfileViewScreen(),
         '/update': (context) => ProfileUpdateScreen(),
         '/chat_history': (context) => ChatListScreen(),
+        '/image_analyzer': (context) => ImageAnalysisScreen(),
       },
     );
   }
