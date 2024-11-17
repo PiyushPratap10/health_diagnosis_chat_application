@@ -1,10 +1,14 @@
 # main.py
-from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+import os
+import tempfile
+from fastapi import FastAPI, Depends, File, HTTPException, UploadFile, status, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database import get_db, mongodb
+from app.image_analysis import call_gemini_model_for_analysis
 from app.models import User,UserToken
 from app.schemas import UserCreate, UserResponse, UserLogin, Message, ChatSession,UserUpdate
 from app.diagnosis import chatbot_response
@@ -370,3 +374,28 @@ async def user_chats(user_id:str):
         messages.append(chat['messages'])
 
     return {'messages':messages}
+
+@app.post("/users/analyze-image/")
+async def analyze_image(file: UploadFile = File(...)):
+    # Verify file type
+    # if file.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
+    #     raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG or PNG images are accepted.")
+
+    # Save the uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp_file:
+        tmp_file.write(file.file.read())
+        tmp_file_path = tmp_file.name
+
+    try:
+        # Call the image analysis function
+        result = call_gemini_model_for_analysis(tmp_file_path)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    finally:
+        # Delete the temp file after processing
+        os.unlink(tmp_file_path)
+    
+    # Return the result as JSON
+    return JSONResponse(content={"result": result})
