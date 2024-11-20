@@ -7,3 +7,5 @@ asyncpg
 pyjwt
 google
 googel-generativeai
+dotenv
+huggingface_hub
