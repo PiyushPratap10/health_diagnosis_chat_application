@@ -1,16 +1,33 @@
-# healthwise_ai
+# Healthwise AI - Web Application
 
-A new Flutter project.
+Healthwise AI is an advanced web-based Flutter application designed to assist users in maintaining and improving their health. With AI-driven features and a user-friendly interface, it offers a seamless experience tailored for modern healthcare needs.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+### 1. **Account Management**
+- **Create Account**: Users can easily register by providing their details.
+- **Login**: Secure authentication ensures only authorized access to the app.
 
-A few resources to get you started if this is your first Flutter project:
+### 2. **Real-Time Chat with AI**
+- Engage in instant conversations with the AI for health-related queries.
+- AI provides accurate and helpful responses in real-time.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 3. **Chat History**
+- Access past conversations with the AI for reference or continuity.
+- Conversations are saved securely and displayed in an organized manner.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 4. **Image Analysis**
+- Upload images to get AI-driven insights and analyses.
+- Useful for analyzing symptoms or identifying health-related concerns from visual inputs.
+
+### 5. **Profile Management**
+- Update profile details such as name, email, and preferences.
+- Personalize your experience based on your health needs.
+
+## Technology Stack
+- **Frontend**: Flutter (optimized for web)
+- **Backend**: Fast and scalable AI services integrated seamlessly.
+- **Authentication**: Secure account management using best practices.
+
+
+
