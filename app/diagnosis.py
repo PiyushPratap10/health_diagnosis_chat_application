@@ -1,5 +1,8 @@
 from huggingface_hub import InferenceClient
-client = InferenceClient(api_key="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")
+import os
+from dotenv import load_dotenv
+load_dotenv()
+client = InferenceClient(api_key=os.getenv("HF-KEY"))
 
 def chatbot_response(user_message, conversation_history=None):
     if conversation_history is None:

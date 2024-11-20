@@ -1,7 +1,10 @@
 import google.generativeai as genai
 import base64
+import os
+from dotenv import load_dotenv
 
-genai.configure(api_key="AIzaSyBr-NYHIjYNAre80ROBo4KA_H19bbOdjBE")
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI-KEY"))
 model = genai.GenerativeModel("gemini-1.5-pro")
 
 sample_prompt = """You are a medical practitioner and an expert in analyzing medical-related images working for a very reputed hospital. You will be provided with images, and you need to identify the anomalies, any disease, or health issues. You need to generate the result in a detailed manner. Write all the findings, next steps, recommendation, etc. You only need to respond if the image is related to a human body and health issues. You must answer but also write a disclaimer saying "Consult with a Doctor before making any decisions".
